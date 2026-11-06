@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Trang chủ — {{ store_name }}{% endblock %}
+
+{% block content %}
+<!-- 1. HERO BANNER -->
+<section class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-emerald-800 to-fresh-700 text-white mb-8 shadow-xl">
+    <div class="absolute inset-0 bg-cover bg-center opacity-20" style="background-image: url('https://images.unsplash.com/photo-1542838132-92c53300491e?w=1600&auto=format&fit=crop&q=80');"></div>
+    <div class="relative max-w-4xl px-6 py-12 md:py-20 z-10">
+        <span class="inline-block px-3 py-1 bg-amber-400 text-slate-900 font-extrabold text-xs uppercase tracking-wider rounded-full mb-3 shadow">
+            <i class="fa-solid fa-sparkles mr-1"></i> Thực phẩm tươi mới mỗi ngày &bull; Hạn dùng rõ ràng
+        </span>
+        <h1 class="text-3xl md:text-5xl font-black leading-tight mb-4">
+            Nông Sản Sạch Chuẩn VietGAP <br>
+            <span class="text-amber-300">Giao Hỏa Tốc 2H & Freeship Từ 300K</span>
+        </h1>
+        <p class="text-sm md:text-base text-emerald-100 mb-6 max-w-xl">
+            FreshMart cam kết kiểm soát nghiêm ngặt ngày thu hoạch, hạn sử dụng minh bạch và quy trình vận chuyển giữ lạnh khép kín bảo đảm an toàn cho gia đình bạn.
+        </p>
+        <div class="flex flex-wrap items-center gap-3">
+            <a href="{{ url_for('products') }}" class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-full transition-all transform hover:scale-105 shadow-lg text-sm flex items-center gap-2">
+                <span>Mua sắm ngay</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <a href="{{ url_for('products', sort='featured') }}" class="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-full backdrop-blur-sm transition-colors text-sm border border-white/20">
+                Sản phẩm nổi bật
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- 2. TRUST BADGES / FEATURES -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-fresh-50 text-fresh-600 flex items-center justify-center text-xl flex-shrink-0">
+            <i class="fa-solid fa-shield-heart"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-sm text-slate-800">100% Tươi Sạch</h4>
+            <p class="text-xs text-slate-500">Chuẩn VietGAP, HSD rõ ràng</p>
+        </div>
+    </div>
+    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl flex-shrink-0">
+            <i class="fa-solid fa-truck-fast"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-sm text-slate-800">Giao Siêu Tốc 2H</h4>
+            <p class="text-xs text-slate-500">Đóng gói túi giữ nhiệt</p>
+        </div>
+    </div>
+    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl flex-shrink-0">
+            <i class="fa-solid fa-arrow-rotate-left"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-sm text-slate-800">Đổi Trả 24 Giờ</h4>
+            <p class="text-xs text-slate-500">Miễn phí nếu dập nát, hỏng</p>
+        </div>
+    </div>
+    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl flex-shrink-0">
+            <i class="fa-solid fa-tag"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-sm text-slate-800">Ưu Đãi Mỗi Ngày</h4>
+            <p class="text-xs text-slate-500">Freeship đơn từ 300K</p>
+        </div>
+    </div>
+</section>
+
+<!-- 3. DANH MỤC NỔI BẬT -->
+<section class="mb-12">
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <h2 class="text-xl md:text-2xl font-black text-slate-900">Danh Mục Sản Phẩm</h2>
+            <p class="text-xs text-slate-500">Khám phá các gian hàng thực phẩm được phân loại rõ ràng</p>
+        </div>
+        <a href="{{ url_for('products') }}" class="text-fresh-600 hover:text-fresh-700 text-xs md:text-sm font-bold flex items-center gap-1">
+            Xem tất cả <i class="fa-solid fa-chevron-right text-xs"></i>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+        {% for cat in categories %}
+        <a href="{{ url_for('products', category=cat.id) }}" 
+           class="group bg-white p-4 rounded-2xl border border-slate-100 hover:border-fresh-200 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center">
+            <div class="w-14 h-14 rounded-2xl bg-fresh-50 text-fresh-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 group-hover:bg-fresh-600 group-hover:text-white transition-all shadow-inner">
+                <i class="{{ cat.icon }}"></i>
+            </div>
+            <h3 class="font-bold text-xs text-slate-800 group-hover:text-fresh-700 line-clamp-1 mb-1">{{ cat.name }}</h3>
+            <span class="text-[11px] text-slate-400">{{ cat.product_count }} sản phẩm</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- 4. SẢN PHẨM NỔI BẬT (CÓ HIỂN THỊ HẠN SỬ DỤNG) -->
+<section class="mb-12">
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-6 bg-fresh-600 rounded-full inline-block"></span>
+                <h2 class="text-xl md:text-2xl font-black text-slate-900">Sản Phẩm Bán Chạy</h2>
+            </div>
+            <p class="text-xs text-slate-500 ml-4">Được hàng ngàn khách hàng tin dùng mỗi ngày</p>
+        </div>
+        <a href="{{ url_for('products', sort='featured') }}" class="text-fresh-600 hover:text-fresh-700 text-xs md:text-sm font-bold flex items-center gap-1">
+            Xem thêm <i class="fa-solid fa-chevron-right text-xs"></i>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {% for p in featured_products %}
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all card-hover overflow-hidden flex flex-col relative group">
+            {% if p.original_price and p.original_price > p.price %}
+                {% set discount_pct = ((p.original_price - p.price) / p.original_price * 100) | round | int %}
+                <span class="discount-badge">-{{ discount_pct }}%</span>
+            {% endif %}
+
+            <a href="{{ url_for('product_detail', product_id=p.id) }}" class="relative block overflow-hidden aspect-square bg-slate-50">
+                <img src="{{ p.image_url }}" alt="{{ p.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            </a>
+
+            <div class="p-3.5 flex flex-col flex-grow">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] font-semibold text-fresh-600 uppercase tracking-wider">{{ p.category_name }}</span>
+                    {% if p.expiry_date %}
+                    <span class="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded font-bold" title="Hạn sử dụng">
+                        HSD: {{ p.expiry_date }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <a href="{{ url_for('product_detail', product_id=p.id) }}" class="font-bold text-slate-800 text-sm hover:text-fresh-600 line-clamp-2 mb-2 leading-snug">
+                    {{ p.name }}
+                </a>
+
+                <div class="mt-auto pt-2 border-t border-slate-50">
+                    <div class="flex items-baseline gap-1.5 mb-2">
+                        <span class="text-base font-extrabold text-rose-600">{{ p.price | currency }}</span>
+                        {% if p.original_price and p.original_price > p.price %}
+                            <span class="text-xs text-slate-400 line-through">{{ p.original_price | currency }}</span>
+                        {% endif %}
+                        <span class="text-[11px] text-slate-500 ml-auto">/ {{ p.unit }}</span>
+                    </div>
+
+                    <form action="{{ url_for('cart_add', product_id=p.id) }}" method="POST" class="ajax-add-to-cart">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="w-full bg-fresh-50 hover:bg-fresh-600 text-fresh-700 hover:text-white font-bold py-2 px-3 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-cart-plus"></i>
+                            <span>Thêm vào giỏ</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- 5. BANNER KHUYẾN MÃI -->
+<section class="mb-12 grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="rounded-3xl p-6 bg-gradient-to-br from-amber-500 to-orange-600 text-white relative overflow-hidden flex flex-col justify-between shadow-md">
+        <div class="relative z-10 max-w-sm">
+            <span class="bg-white/20 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase">Ưu đãi tuần này</span>
+            <h3 class="text-2xl font-black mt-2 mb-1">Mã Giảm Giá 10%</h3>
+            <p class="text-xs text-orange-100 mb-4">Nhập mã <strong class="bg-white text-orange-700 px-2 py-0.5 rounded font-black tracking-wider">FRESHMART10</strong> khi thanh toán để được giảm ngay 10%.</p>
+            <a href="{{ url_for('products') }}" class="inline-block bg-white text-slate-900 font-bold px-4 py-2 rounded-xl text-xs shadow hover:bg-slate-100">
+                Áp dụng ngay <i class="fa-solid fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+        <i class="fa-solid fa-gift absolute -right-6 -bottom-6 text-9xl text-white/10 pointer-events-none"></i>
+    </div>
+
+    <div class="rounded-3xl p-6 bg-gradient-to-br from-fresh-700 to-emerald-900 text-white relative overflow-hidden flex flex-col justify-between shadow-md">
+        <div class="relative z-10 max-w-sm">
+            <span class="bg-white/20 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase">Freeship siêu tốc</span>
+            <h3 class="text-2xl font-black mt-2 mb-1">Miễn Phí Vận Chuyển</h3>
+            <p class="text-xs text-emerald-100 mb-4">Áp dụng cho mọi đơn hàng từ <strong>300.000 đ</strong> trở lên trong bán kính 10km nội thành.</p>
+            <a href="{{ url_for('products') }}" class="inline-block bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs shadow hover:bg-amber-300">
+                Đặt hàng liền tay <i class="fa-solid fa-bag-shopping ml-1"></i>
+            </a>
+        </div>
+        <i class="fa-solid fa-truck-fast absolute -right-6 -bottom-6 text-9xl text-white/10 pointer-events-none"></i>
+    </div>
+</section>
+
+<!-- 6. NÔNG SẢN MỚI VỀ (HSD TƯƠI MỚI) -->
+<section class="mb-12">
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-6 bg-amber-500 rounded-full inline-block"></span>
+                <h2 class="text-xl md:text-2xl font-black text-slate-900">Nông Sản Mới Về Hôm Nay</h2>
+            </div>
+            <p class="text-xs text-slate-500 ml-4">Thu hoạch tươi mới từ các nông trại sạch trong sáng nay</p>
+        </div>
+        <a href="{{ url_for('products') }}" class="text-fresh-600 hover:text-fresh-700 text-xs md:text-sm font-bold flex items-center gap-1">
+            Xem tất cả <i class="fa-solid fa-chevron-right text-xs"></i>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {% for p in new_products %}
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all card-hover overflow-hidden flex flex-col relative group">
+            <a href="{{ url_for('product_detail', product_id=p.id) }}" class="relative block overflow-hidden aspect-square bg-slate-50">
+                <img src="{{ p.image_url }}" alt="{{ p.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            </a>
+
+            <div class="p-3.5 flex flex-col flex-grow">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] font-semibold text-fresh-600 uppercase tracking-wider">{{ p.category_name }}</span>
+                    {% if p.expiry_date %}
+                    <span class="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded font-bold" title="Hạn sử dụng">
+                        HSD: {{ p.expiry_date }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <a href="{{ url_for('product_detail', product_id=p.id) }}" class="font-bold text-slate-800 text-sm hover:text-fresh-600 line-clamp-2 mb-2 leading-snug">
+                    {{ p.name }}
+                </a>
+
+                <div class="mt-auto pt-2 border-t border-slate-50">
+                    <div class="flex items-baseline gap-1.5 mb-2">
+                        <span class="text-base font-extrabold text-rose-600">{{ p.price | currency }}</span>
+                        {% if p.original_price and p.original_price > p.price %}
+                            <span class="text-xs text-slate-400 line-through">{{ p.original_price | currency }}</span>
+                        {% endif %}
+                        <span class="text-[11px] text-slate-500 ml-auto">/ {{ p.unit }}</span>
+                    </div>
+
+                    <form action="{{ url_for('cart_add', product_id=p.id) }}" method="POST" class="ajax-add-to-cart">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="w-full bg-fresh-50 hover:bg-fresh-600 text-fresh-700 hover:text-white font-bold py-2 px-3 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-cart-plus"></i>
+                            <span>Thêm vào giỏ</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

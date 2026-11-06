@@ -1,0 +1,138 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}{{ 'Chỉnh Sửa' if product else 'Thêm Mới' }} Sản Phẩm{% endblock %}
+{% block header_title %}{{ 'Chỉnh Sửa' if product else 'Thêm Mới' }} Sản Phẩm Siêu Thị{% endblock %}
+
+{% block admin_content %}
+<div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+    <div class="mb-6 pb-4 border-b border-slate-100 flex items-center justify-between">
+        <h2 class="font-bold text-slate-800 text-base">
+            {{ 'Cập Nhật Thông Tin, Tồn Kho & Hạn Sử Dụng' if product else 'Nhập Thông Tin Sản Phẩm Mới' }}
+        </h2>
+        <a href="{{ url_for('admin_products') }}" class="text-xs text-slate-500 hover:text-slate-800">
+            <i class="fa-solid fa-arrow-left mr-1"></i> Quay lại danh sách
+        </a>
+    </div>
+
+    <form method="POST" class="space-y-4 text-xs">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Tên sản phẩm -->
+            <div class="md:col-span-2">
+                <label class="font-bold text-slate-700 block mb-1">Tên sản phẩm <span class="text-rose-500">*</span></label>
+                <input type="text" name="name" required value="{{ product.name if product else '' }}" 
+                       placeholder="Ví dụ: Cà chua Beef Đà Lạt hữu cơ"
+                       class="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600 text-xs">
+            </div>
+
+            <!-- Danh mục -->
+            <div>
+                <label class="font-bold text-slate-700 block mb-1">Thuộc danh mục <span class="text-rose-500">*</span></label>
+                <select name="category_id" required class="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600 text-xs bg-white">
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if product and product.category_id == cat.id %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Đơn vị tính -->
+            <div>
+                <label class="font-bold text-slate-700 block mb-1">Đơn vị tính <span class="text-rose-500">*</span></label>
+                <input type="text" name="unit" required value="{{ product.unit if product else '1 kg' }}" 
+                       placeholder="Ví dụ: 1 kg, Hộp 500g, Túi 300g, Vỉ 10 quả..."
+                       class="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600 text-xs">
+            </div>
+
+            <!-- Giá bán -->
+            <div>
+                <label class="font-bold text-slate-700 block mb-1">Giá bán hiện tại (VNĐ) <span class="text-rose-500">*</span></label>
+                <input type="number" name="price" required value="{{ product.price if product else '' }}" 
+                       placeholder="35000"
+                       class="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600 text-xs">
+            </div>
+
+            <!-- Giá gốc -->
+            <div>
+                <label class="font-bold text-slate-700 block mb-1">Giá gốc (VNĐ) (Nếu có giảm giá)</label>
+                <input type="number" name="original_price" value="{{ product.original_price if product and product.original_price else '' }}" 
+                       placeholder="45000"
+                       class="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600 text-xs">
+            </div>
+
+            <!-- QUẢN LÝ SỐ LƯỢNG TỒN KHO -->
+            <div>
+                <label class="font-bold text-slate-700 block mb-1">Số lượng trong kho (Tồn kho) <span class="text-rose-500">*</span></label>
+                <input type="number" name="stock" required value="{{ product.stock if product else 100 }}" 
+                       placeholder="100"
+                       class="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600 text-xs">
+            </div>
+
+            <!-- ĐƯỜNG DẪN ẢNH -->
+            <div>
+                <label class="font-bold text-slate-700 block mb-1">Link URL hình ảnh <span class="text-rose-500">*</span></label>
+                <input type="url" name="image_url" required value="{{ product.image_url if product else '' }}" 
+                       placeholder="https://images.unsplash.com/..."
+                       class="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600 text-xs">
+            </div>
+
+            <!-- QUẢN LÝ HẠN SỬ DỤNG VÀ NGÀY SẢN XUẤT -->
+            <div class="md:col-span-2 bg-emerald-50/60 p-4 rounded-2xl border border-emerald-200/80">
+                <h4 class="font-bold text-emerald-900 text-xs mb-3 flex items-center gap-1.5">
+                    <i class="fa-solid fa-calendar-check text-emerald-600"></i>
+                    <span>Quản Lý Hạn Sử Dụng & Bảo Quản Thực Phẩm Tươi:</span>
+                </h4>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Ngày thu hoạch / NSX</label>
+                        <input type="text" name="manufacturing_date" value="{{ product.manufacturing_date if product else '10/10/2026' }}" 
+                               placeholder="10/10/2026"
+                               class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600 text-xs bg-white">
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Hạn sử dụng (HSD)</label>
+                        <input type="text" name="expiry_date" value="{{ product.expiry_date if product else '20/10/2026' }}" 
+                               placeholder="20/10/2026"
+                               class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600 text-xs bg-white">
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Thời hạn & Nhiệt độ bảo quản</label>
+                        <input type="text" name="shelf_life" value="{{ product.shelf_life if product else '7 ngày (0-4°C)' }}" 
+                               placeholder="7 ngày (0-4°C)"
+                               class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600 text-xs bg-white">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Checkbox thuộc tính -->
+            <div class="md:col-span-2 flex items-center gap-6 py-1">
+                <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-700">
+                    <input type="checkbox" name="is_featured" value="1" {% if product and product.is_featured %}checked{% endif %} class="rounded text-fresh-600 focus:ring-fresh-500">
+                    <span>Sản phẩm Nổi Bật (Trang chủ)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-700">
+                    <input type="checkbox" name="is_new" value="1" {% if not product or product.is_new %}checked{% endif %} class="rounded text-fresh-600 focus:ring-fresh-500">
+                    <span>Hàng Mới Về</span>
+                </label>
+            </div>
+
+            <!-- Mô tả sản phẩm -->
+            <div class="md:col-span-2">
+                <label class="font-bold text-slate-700 block mb-1">Mô tả sản phẩm</label>
+                <textarea name="description" rows="3" 
+                          placeholder="Mô tả về nguồn gốc, quy trình trồng trọt đạt chuẩn, cách bảo quản và chế biến..."
+                          class="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600 text-xs">{{ product.description if product else '' }}</textarea>
+            </div>
+        </div>
+
+        <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+            <a href="{{ url_for('admin_products') }}" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors">
+                Hủy bỏ
+            </a>
+            <button type="submit" class="bg-fresh-600 hover:bg-fresh-700 text-white font-bold px-6 py-2.5 rounded-xl transition-colors shadow">
+                {{ 'Cập Nhật Sản Phẩm' if product else 'Lưu Sản Phẩm Mới' }}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

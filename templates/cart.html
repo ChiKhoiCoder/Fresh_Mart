@@ -1,0 +1,650 @@
+{% extends "base.html" %}
+
+{% block title %}Giỏ Hàng & Tính Phí Giao Hàng — {{ store_name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ===== CART PAGE STYLES ===== */
+    .cart-item-row {
+        transition: background-color 0.2s ease;
+        position: relative;
+    }
+    .cart-item-row:hover { background-color: #f8fffe; }
+
+    /* Quantity controls */
+    .qty-btn {
+        width: 34px; height: 34px;
+        display: flex; align-items: center; justify-content: center;
+        border: none; background: transparent; cursor: pointer;
+        border-radius: 8px; transition: all 0.15s ease;
+        font-size: 12px; color: #475569; flex-shrink: 0;
+        text-decoration: none;
+    }
+    .qty-btn:hover { background-color: #e2e8f0; color: #0f172a; }
+    .qty-btn.disabled { opacity: 0.3; pointer-events: none; cursor: not-allowed; }
+    .qty-input {
+        width: 46px; text-align: center; font-size: 13px; font-weight: 700;
+        border: none; outline: none; background: white; color: #0f172a;
+        padding: 4px 0;
+        -moz-appearance: textfield;
+    }
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .qty-wrapper {
+        display: flex; align-items: center;
+        border: 1.5px solid #e2e8f0; border-radius: 12px;
+        background: white; overflow: hidden;
+        transition: border-color 0.2s;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .qty-wrapper:focus-within { border-color: #16a34a; }
+
+    /* Delete button */
+    .btn-delete-item {
+        width: 34px; height: 34px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 10px; color: #94a3b8;
+        transition: all 0.2s ease; cursor: pointer;
+        background: transparent; border: none;
+        flex-shrink: 0;
+    }
+    .btn-delete-item:hover { background-color: #fff1f2; color: #e11d48; transform: scale(1.1); }
+
+    /* Delivery option cards */
+    .delivery-option {
+        border: 2px solid #e2e8f0; border-radius: 14px;
+        padding: 14px 16px; cursor: pointer;
+        transition: all 0.2s ease; display: block;
+        background: white; position: relative; overflow: hidden;
+        user-select: none;
+    }
+    .delivery-option:hover { border-color: #86efac; background: #f0fdf4; }
+    .delivery-option.selected {
+        border-color: #16a34a;
+        background: linear-gradient(135deg, #f0fdf4, #ffffff);
+        box-shadow: 0 0 0 3px rgba(22,163,74,0.1);
+    }
+    .delivery-option input[type="radio"] { display: none; }
+    .check-icon { display: none; }
+    .delivery-option.selected .check-icon { display: flex; }
+
+    /* Freeship progress bar */
+    .freeship-bar { width: 100%; height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+    .freeship-fill {
+        height: 100%; border-radius: 999px;
+        background: linear-gradient(90deg, #22c55e, #16a34a);
+        transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Coupon input */
+    .coupon-input {
+        border: 2px solid #e2e8f0; border-radius: 12px;
+        padding: 10px 14px; font-size: 13px; outline: none;
+        transition: border-color 0.2s; text-transform: uppercase;
+        letter-spacing: 0.05em; font-weight: 600;
+        flex: 1; min-width: 0; font-family: inherit;
+    }
+    .coupon-input::placeholder { font-weight: 400; text-transform: none; letter-spacing: 0; color: #94a3b8; }
+    .coupon-input:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.1); }
+
+    /* Checkout button */
+    .btn-checkout {
+        position: relative; overflow: hidden; display: block; width: 100%;
+        background: linear-gradient(135deg, #16a34a, #15803d);
+        color: white; font-weight: 800; padding: 16px 24px;
+        border-radius: 14px; text-align: center; font-size: 15px;
+        text-decoration: none; transition: all 0.25s ease;
+        box-shadow: 0 4px 20px rgba(22,163,74,0.35); letter-spacing: 0.02em;
+    }
+    .btn-checkout::before {
+        content: ''; position: absolute; top: 0; left: -100%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        transition: left 0.5s ease;
+    }
+    .btn-checkout:hover::before { left: 100%; }
+    .btn-checkout:hover {
+        background: linear-gradient(135deg, #15803d, #166534);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(22,163,74,0.45);
+    }
+
+    /* Empty cart */
+    @keyframes floatCart {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-12px); }
+    }
+    .cart-empty-icon { animation: floatCart 3s ease-in-out infinite; }
+
+    /* Summary sticky */
+    .summary-sticky { position: sticky; top: 84px; }
+
+    /* Price flash */
+    @keyframes priceFlash {
+        0% { background-color: transparent; }
+        35% { background-color: #fefce8; border-radius: 4px; }
+        100% { background-color: transparent; }
+    }
+    .price-flash { animation: priceFlash 0.7s ease; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav class="flex items-center text-xs text-slate-500 mb-5 space-x-1.5">
+    <a href="{{ url_for('index') }}" class="hover:text-fresh-600 transition-colors">Trang chủ</a>
+    <i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i>
+    <span class="text-slate-800 font-semibold">Giỏ hàng</span>
+</nav>
+
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <div>
+        <h1 class="text-2xl font-black text-slate-900 flex items-center gap-2.5">
+            <span class="w-10 h-10 bg-fresh-600 rounded-xl flex items-center justify-center text-white shadow-md">
+                <i class="fa-solid fa-cart-shopping text-base"></i>
+            </span>
+            <span>Giỏ Hàng Của Bạn</span>
+        </h1>
+        <p class="text-xs text-slate-500 mt-1">Kiểm tra số lượng tồn kho, hạn sử dụng sản phẩm và chọn phương thức giao hàng</p>
+    </div>
+    {% if cart.item_list %}
+    <span class="text-xs bg-fresh-600 text-white font-bold px-3 py-1.5 rounded-full shadow-sm">
+        <i class="fa-solid fa-box mr-1"></i> {{ cart.item_list | length }} sản phẩm trong giỏ
+    </span>
+    {% endif %}
+</div>
+
+{% if cart.item_list %}
+
+<!-- 1. THANH TIẾN ĐỘ MIỄN PHÍ VẬN CHUYỂN -->
+<div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm mb-6">
+    <div class="flex items-center justify-between text-xs mb-2.5 gap-2 flex-wrap">
+        <span class="font-bold text-slate-700 flex items-center gap-1.5 flex-wrap">
+            <i class="fa-solid fa-truck-fast text-fresh-600 text-base"></i>
+            {% if cart.free_shipping_needed > 0 %}
+                Mua thêm <strong class="text-rose-500">{{ cart.free_shipping_needed | currency }}</strong> để được <strong class="text-fresh-700">MIỄN PHÍ VẬN CHUYỂN</strong>!
+            {% else %}
+                <span class="text-emerald-600 font-bold">🎉 Đơn hàng đã đủ điều kiện MIỄN PHÍ VẬN CHUYỂN tiêu chuẩn!</span>
+            {% endif %}
+        </span>
+        <span class="text-slate-400 font-mono text-[11px] flex-shrink-0">{{ cart.subtotal | currency }} / 300.000 đ</span>
+    </div>
+    <div class="freeship-bar">
+        <div class="freeship-fill" style="width: {{ cart.progress_pct }}%"></div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+    <!-- 2. DANH SÁCH SẢN PHẨM -->
+    <div class="lg:col-span-2 space-y-4">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <!-- Table Header -->
+            <div class="px-5 py-3 bg-slate-50 border-b border-slate-100 hidden sm:grid grid-cols-12 gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <div class="col-span-5">Sản Phẩm</div>
+                <div class="col-span-2 text-center">Đơn Giá</div>
+                <div class="col-span-3 text-center">Số Lượng</div>
+                <div class="col-span-2 text-right">Thành Tiền</div>
+            </div>
+
+            <div class="divide-y divide-slate-100">
+                {% for item in cart.item_list %}
+                <div class="cart-item-row px-4 py-4 sm:px-5 flex flex-col sm:grid sm:grid-cols-12 gap-3 sm:gap-2 items-start sm:items-center">
+
+                    <!-- Product Info -->
+                    <div class="sm:col-span-5 flex items-center gap-3 w-full min-w-0">
+                        <div class="relative flex-shrink-0">
+                            <img src="{{ item.image_url }}" alt="{{ item.name }}"
+                                 class="w-16 h-16 rounded-xl object-cover border border-slate-100 shadow-sm"
+                                 onerror="this.src='https://placehold.co/64x64/f0fdf4/16a34a?text=%F0%9F%A5%AC'">
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <a href="{{ url_for('product_detail', product_id=item.id) }}"
+                               class="font-bold text-slate-800 text-xs hover:text-fresh-600 transition-colors block truncate">
+                                {{ item.name }}
+                            </a>
+                            <span class="text-[11px] text-slate-400 block mt-0.5">{{ item.unit }}</span>
+                            <div class="flex flex-wrap items-center gap-1 mt-1.5">
+                                <span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+                                    <i class="fa-regular fa-calendar-check text-emerald-600"></i>
+                                    HSD: {{ item.expiry_date }}
+                                </span>
+                                <span class="text-[10px] text-slate-400">{{ item.shelf_life }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Unit Price (desktop) -->
+                    <div class="sm:col-span-2 text-center hidden sm:flex sm:flex-col items-center">
+                        {% if item.original_price and item.original_price > item.price %}
+                        <span class="text-[11px] text-slate-400 line-through">{{ item.original_price | currency }}</span>
+                        {% endif %}
+                        <span class="text-xs font-bold text-slate-700">{{ item.price | currency }}</span>
+                    </div>
+
+                    <!-- Quantity Controls -->
+                    <div class="sm:col-span-3 flex flex-col items-start sm:items-center gap-1">
+                        <div class="qty-wrapper" id="qty-wrapper-{{ item.id }}">
+                            <a href="{{ url_for('cart_change_qty', product_id=item.id, action='decrease') }}"
+                               class="qty-btn" title="Giảm 1">
+                                <i class="fa-solid fa-minus"></i>
+                            </a>
+                            <form action="{{ url_for('cart_update') }}" method="POST" class="m-0 p-0 inline" id="qty-form-{{ item.id }}">
+                                <input type="hidden" name="product_id" value="{{ item.id }}">
+                                <input type="number" name="quantity" value="{{ item.quantity }}"
+                                       min="1" max="{{ item.stock }}"
+                                       class="qty-input"
+                                       onchange="document.getElementById('qty-form-{{ item.id }}').submit()">
+                            </form>
+                            <a href="{{ url_for('cart_change_qty', product_id=item.id, action='increase') }}"
+                               class="qty-btn {% if item.quantity >= item.stock %}disabled{% endif %}" title="Tăng 1">
+                                <i class="fa-solid fa-plus"></i>
+                            </a>
+                        </div>
+                        {% if item.quantity >= item.stock %}
+                        <span class="text-[10px] text-amber-600 font-semibold flex items-center gap-0.5">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Tối đa (kho: {{ item.stock }})
+                        </span>
+                        {% else %}
+                        <span class="text-[10px] text-slate-400">Kho: <strong class="text-slate-500">{{ item.stock }}</strong></span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Subtotal + Delete -->
+                    <div class="sm:col-span-2 flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+                        <div class="text-right">
+                            <span class="sm:hidden text-[10px] text-slate-400 block">{{ item.price | currency }} × {{ item.quantity }}</span>
+                            <span class="text-xs sm:text-sm font-black text-rose-500">{{ item.subtotal | currency }}</span>
+                        </div>
+                        <button type="button" class="btn-delete-item"
+                                onclick="confirmDeleteItem({{ item.id }}, '{{ item.name | replace("'", "\\'") }}')"
+                                title="Xóa sản phẩm">
+                            <i class="fa-regular fa-trash-can text-sm"></i>
+                        </button>
+                    </div>
+
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Cart Actions -->
+        <div class="flex items-center justify-between flex-wrap gap-3 px-1">
+            <a href="{{ url_for('products') }}"
+               class="text-fresh-600 hover:text-fresh-700 font-bold text-xs flex items-center gap-1.5 transition-colors group">
+                <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                <span>Tiếp tục mua hàng</span>
+            </a>
+            <button type="button" onclick="confirmClearCart()"
+                    class="text-xs text-slate-500 hover:text-rose-600 font-medium flex items-center gap-1.5 transition-colors">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Xóa sạch giỏ hàng</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 3. PANEL TỔNG HỢP (STICKY) -->
+    <div class="space-y-4 summary-sticky">
+
+        <!-- Phương Thức Giao Hàng (AJAX, không dùng form submit) -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <h3 class="font-bold text-slate-900 text-sm mb-4 flex items-center gap-2">
+                <span class="w-7 h-7 bg-fresh-100 text-fresh-700 rounded-lg flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-motorcycle"></i>
+                </span>
+                Phương Thức Giao Hàng
+            </h3>
+            <div class="space-y-2.5">
+
+                <!-- Giao tiêu chuẩn -->
+                <label class="delivery-option {% if cart.delivery_type == 'standard' %}selected{% endif %}" id="label-standard">
+                    <input type="radio" name="delivery_type" value="standard" {% if cart.delivery_type == 'standard' %}checked{% endif %}>
+                    <div class="flex items-start gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 flex-shrink-0 mt-0.5">
+                            <i class="fa-solid fa-truck text-sm"></i>
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <div class="flex items-center justify-between gap-2 flex-wrap">
+                                <span class="font-bold text-slate-800 text-sm">Giao tiêu chuẩn</span>
+                                <span class="font-black text-sm">
+                                    {% if cart.subtotal >= 300000 %}
+                                        <span class="text-emerald-600">Miễn phí</span>
+                                    {% else %}
+                                        <span class="text-slate-700">20.000 đ</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <span class="text-[11px] text-slate-500 block mt-0.5">Bảo quản mát, nhận hàng cuối ngày.</span>
+                        </div>
+                    </div>
+                    <!-- Check icon -->
+                    <div class="check-icon absolute top-3 right-3 w-5 h-5 rounded-full bg-fresh-600 items-center justify-center">
+                        <i class="fa-solid fa-check text-white text-[10px] m-auto"></i>
+                    </div>
+                </label>
+
+                <!-- Giao hỏa tốc 2H -->
+                <label class="delivery-option {% if cart.delivery_type == 'express_2h' %}selected{% endif %}" id="label-express_2h">
+                    <input type="radio" name="delivery_type" value="express_2h" {% if cart.delivery_type == 'express_2h' %}checked{% endif %}>
+                    <div class="flex items-start gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 flex-shrink-0 mt-0.5">
+                            <i class="fa-solid fa-bolt text-sm"></i>
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <div class="flex items-center justify-between gap-2 flex-wrap">
+                                <span class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                                    Giao hỏa tốc
+                                    <span class="bg-amber-400 text-amber-900 text-[10px] px-1.5 py-0.5 rounded font-black">2H</span>
+                                </span>
+                                <span class="font-black text-sm">
+                                    {% if cart.subtotal >= 300000 %}
+                                        <span class="text-emerald-600">15.000 đ <span class="font-normal text-xs">(Ưu đãi)</span></span>
+                                    {% else %}
+                                        <span class="text-slate-700">35.000 đ</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <span class="text-[11px] text-slate-500 block mt-0.5">Túi giữ nhiệt, tận cửa trong 120 phút.</span>
+                        </div>
+                    </div>
+                    <!-- Check icon -->
+                    <div class="check-icon absolute top-3 right-3 w-5 h-5 rounded-full bg-fresh-600 items-center justify-center">
+                        <i class="fa-solid fa-check text-white text-[10px] m-auto"></i>
+                    </div>
+                </label>
+
+            </div>
+            <div id="delivery-loading" class="hidden text-xs text-fresh-600 text-center mt-2 animate-pulse">
+                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang cập nhật phí vận chuyển...
+            </div>
+        </div>
+
+        <!-- Mã Giảm Giá -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <h3 class="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+                <span class="w-7 h-7 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-ticket"></i>
+                </span>
+                Mã Giảm Giá
+            </h3>
+            {% if cart.coupon_code %}
+                <div class="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-xl mb-2">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                            <i class="fa-solid fa-tag text-white text-xs"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-emerald-800 block">{{ cart.coupon_code }}</span>
+                            <span class="text-[11px] text-emerald-600">Tiết kiệm {{ cart.discount | currency }}</span>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('remove_coupon') }}" class="text-xs text-rose-600 font-semibold hover:underline">Hủy</a>
+                </div>
+            {% else %}
+                <form action="{{ url_for('apply_coupon') }}" method="POST" class="mb-2">
+                    <div class="flex gap-2">
+                        <input type="text" name="coupon_code" id="coupon-input"
+                               placeholder="Nhập mã giảm giá..."
+                               class="coupon-input" autocomplete="off">
+                        <button type="submit"
+                                class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors flex-shrink-0">
+                            Áp dụng
+                        </button>
+                    </div>
+                </form>
+                <div class="text-[11px] text-slate-500 bg-slate-50 rounded-lg px-3 py-2">
+                    💡 Thử:
+                    <button type="button" onclick="fillCoupon('FRESHMART10')" class="text-fresh-700 font-bold hover:underline">FRESHMART10</button>
+                    (giảm 10%) ·
+                    <button type="button" onclick="fillCoupon('GIAM20K')" class="text-fresh-700 font-bold hover:underline">GIAM20K</button>
+                    (giảm 20k)
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Tóm Tắt Hóa Đơn -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <h3 class="font-bold text-slate-900 text-sm pb-3 mb-3 border-b border-slate-100 flex items-center gap-2">
+                <span class="w-7 h-7 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-receipt"></i>
+                </span>
+                Tóm Tắt Hóa Đơn
+            </h3>
+            <div class="space-y-2.5 text-xs">
+                <div class="flex justify-between text-slate-600">
+                    <span>Tiền hàng ({{ cart.item_list | length }} sản phẩm):</span>
+                    <span class="font-bold text-slate-800">{{ cart.subtotal | currency }}</span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                    <span>Phí vận chuyển:</span>
+                    <span id="summary-shipping-fee">
+                        {% if cart.shipping_fee == 0 %}
+                            <strong class="text-emerald-600 font-bold">Miễn phí (0 đ)</strong>
+                        {% else %}
+                            <strong class="text-slate-800">{{ cart.shipping_fee | currency }}</strong>
+                        {% endif %}
+                    </span>
+                </div>
+                {% if cart.discount > 0 %}
+                <div class="flex justify-between text-emerald-600 font-semibold">
+                    <span><i class="fa-solid fa-tag text-emerald-500 mr-1"></i>Giảm giá ({{ cart.coupon_code }}):</span>
+                    <span>-{{ cart.discount | currency }}</span>
+                </div>
+                {% endif %}
+                <hr class="border-slate-100">
+                <div class="flex justify-between items-baseline pt-1">
+                    <span class="text-sm font-bold text-slate-900">Tổng thanh toán:</span>
+                    <div class="text-right">
+                        <span id="summary-grand-total" class="text-2xl font-black text-rose-500 leading-none">{{ cart.total | currency }}</span>
+                        <span class="block text-[10px] text-slate-400 mt-0.5">Đã bao gồm VAT</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Checkout Button -->
+            <div class="mt-5">
+                <a href="{{ url_for('checkout', delivery_type=cart.delivery_type) }}" class="btn-checkout">
+                    <i class="fa-solid fa-lock mr-2 text-sm opacity-80"></i>
+                    Tiến Hành Thanh Toán
+                    <i class="fa-solid fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+
+            <!-- Trust Badges -->
+            <div class="mt-4 grid grid-cols-2 gap-2">
+                <div class="flex items-center gap-1.5 text-[11px] text-slate-500">
+                    <i class="fa-solid fa-shield-halved text-emerald-600"></i>
+                    <span>Đảm bảo hoàn tiền</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-[11px] text-slate-500">
+                    <i class="fa-solid fa-lock text-slate-400"></i>
+                    <span>Thanh toán bảo mật</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-[11px] text-slate-500">
+                    <i class="fa-solid fa-rotate-left text-blue-500"></i>
+                    <span>Đổi trả trong 24h</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-[11px] text-slate-500">
+                    <i class="fa-solid fa-leaf text-fresh-600"></i>
+                    <span>100% sản phẩm sạch</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% else %}
+<!-- ===== EMPTY CART ===== -->
+<div class="bg-white rounded-3xl p-12 text-center border border-slate-100 shadow-sm max-w-lg mx-auto mt-8">
+    <div class="cart-empty-icon w-28 h-28 bg-fresh-50 rounded-full flex items-center justify-center text-5xl text-fresh-600 mx-auto mb-6">
+        <i class="fa-solid fa-cart-shopping"></i>
+    </div>
+    <h2 class="text-xl font-black text-slate-800 mb-2">Giỏ hàng của bạn đang trống</h2>
+    <p class="text-sm text-slate-500 mb-8 leading-relaxed max-w-xs mx-auto">
+        Hãy dạo quanh gian hàng thực phẩm tươi sống của FreshMart để chọn cho mình những món ưng ý nhé!
+    </p>
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="{{ url_for('products') }}"
+           class="inline-flex items-center justify-center gap-2 bg-fresh-600 hover:bg-fresh-700 text-white font-bold px-7 py-3 rounded-full text-sm shadow-md transition-all hover:-translate-y-0.5">
+            <i class="fa-solid fa-bag-shopping"></i> Mua sắm ngay
+        </a>
+        <a href="{{ url_for('index') }}"
+           class="inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-7 py-3 rounded-full text-sm transition-all">
+            <i class="fa-solid fa-house"></i> Về trang chủ
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ---- Delivery option switching (AJAX) ----
+    var deliveryInputs = document.querySelectorAll('input[name="delivery_type"]');
+    var deliveryLabels = document.querySelectorAll('.delivery-option');
+    var loadingEl = document.getElementById('delivery-loading');
+
+    deliveryInputs.forEach(function(radio) {
+        // Show check icon on initially selected
+        if (radio.checked) {
+            var parentLabel = radio.closest('.delivery-option');
+            if (parentLabel) {
+                var icon = parentLabel.querySelector('.check-icon');
+                if (icon) icon.style.display = 'flex';
+            }
+        }
+
+        radio.addEventListener('change', function () {
+            var selectedType = this.value;
+
+            // Update visuals immediately
+            deliveryLabels.forEach(function(lbl) {
+                lbl.classList.remove('selected');
+                var icon = lbl.querySelector('.check-icon');
+                if (icon) icon.style.display = 'none';
+            });
+            var selLabel = document.getElementById('label-' + selectedType);
+            if (selLabel) {
+                selLabel.classList.add('selected');
+                var selIcon = selLabel.querySelector('.check-icon');
+                if (selIcon) selIcon.style.display = 'flex';
+            }
+
+            if (loadingEl) loadingEl.classList.remove('hidden');
+
+            var formData = new FormData();
+            formData.append('delivery_type', selectedType);
+
+            fetch('/cart/set-delivery', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (loadingEl) loadingEl.classList.add('hidden');
+                if (data.success) {
+                    var feeEl = document.getElementById('summary-shipping-fee');
+                    if (feeEl) {
+                        if (data.shipping_fee === 0) {
+                            feeEl.innerHTML = '<strong class="text-emerald-600 font-bold">Mi\u1ec5n ph\u00ed (0 \u0111)</strong>';
+                        } else {
+                            feeEl.innerHTML = '<strong class="text-slate-800">' + formatVND(data.shipping_fee) + '</strong>';
+                        }
+                        flash(feeEl);
+                    }
+                    var totalEl = document.getElementById('summary-grand-total');
+                    if (totalEl) {
+                        totalEl.textContent = formatVND(data.total);
+                        flash(totalEl);
+                    }
+                }
+            })
+            .catch(function() {
+                if (loadingEl) loadingEl.classList.add('hidden');
+            });
+        });
+    });
+
+    // Clickable label areas
+    deliveryLabels.forEach(function(label) {
+        label.addEventListener('click', function() {
+            var radio = this.querySelector('input[type="radio"]');
+            if (radio && !radio.checked) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change'));
+            }
+        });
+    });
+
+});
+
+function flash(el) {
+    el.classList.add('price-flash');
+    setTimeout(function() { el.classList.remove('price-flash'); }, 800);
+}
+
+function formatVND(amount) {
+    return new Intl.NumberFormat('vi-VN').format(amount) + ' \u0111';
+}
+
+function confirmDeleteItem(productId, productName) {
+    Swal.fire({
+        title: 'X\u00f3a s\u1ea3n ph\u1ea9m?',
+        html: 'B\u1ea1n mu\u1ed1n x\u00f3a <strong>' + productName + '</strong> kh\u1ecfi gi\u1ecf h\u00e0ng?',
+        icon: 'warning',
+        iconColor: '#f43f5e',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-trash-can mr-1"></i> X\u00f3a',
+        cancelButtonText: 'Gi\u1eef l\u1ea1i',
+        confirmButtonColor: '#f43f5e',
+        cancelButtonColor: '#64748b',
+        focusCancel: true,
+        customClass: {
+            popup: 'rounded-2xl shadow-xl',
+            confirmButton: 'rounded-xl font-bold',
+            cancelButton: 'rounded-xl font-bold'
+        }
+    }).then(function(result) {
+        if (result.isConfirmed) {
+            window.location.href = '/cart/remove/' + productId;
+        }
+    });
+}
+
+function confirmClearCart() {
+    Swal.fire({
+        title: 'X\u00f3a s\u1ea1ch gi\u1ecf h\u00e0ng?',
+        text: 'To\u00e0n b\u1ed9 s\u1ea3n ph\u1ea9m v\u00e0 m\u00e3 gi\u1ea3m gi\u00e1 s\u1ebd b\u1ecb x\u00f3a. H\u00e0nh \u0111\u1ed9ng n\u00e0y kh\u00f4ng th\u1ec3 ho\u00e0n t\u00e1c!',
+        icon: 'warning',
+        iconColor: '#f43f5e',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-trash-can mr-1"></i> X\u00f3a t\u1ea5t c\u1ea3',
+        cancelButtonText: 'H\u1ee7y',
+        confirmButtonColor: '#f43f5e',
+        cancelButtonColor: '#64748b',
+        focusCancel: true,
+        customClass: {
+            popup: 'rounded-2xl shadow-xl',
+            confirmButton: 'rounded-xl font-bold',
+            cancelButton: 'rounded-xl font-bold'
+        }
+    }).then(function(result) {
+        if (result.isConfirmed) {
+            window.location.href = '/cart/clear';
+        }
+    });
+}
+
+function fillCoupon(code) {
+    var input = document.getElementById('coupon-input');
+    if (input) {
+        input.value = code;
+        input.focus();
+        input.style.borderColor = '#16a34a';
+        setTimeout(function() { input.style.borderColor = ''; }, 1500);
+    }
+}
+</script>
+{% endblock %}

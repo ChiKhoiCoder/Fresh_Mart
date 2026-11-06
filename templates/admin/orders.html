@@ -1,0 +1,130 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}Quản Lý Đơn Hàng & Vận Chuyển{% endblock %}
+{% block header_title %}Quản Lý Đơn Hàng, Vận Chuyển & Điều Phối Shipper{% endblock %}
+
+{% block admin_content %}
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div>
+            <h2 class="font-bold text-slate-800 text-base">Danh Sách Đơn Hàng & Giao Nhận ({{ orders | length }})</h2>
+            <p class="text-xs text-slate-500">Tiếp nhận, xử lý đóng gói, tính phí ship và phân công shipper giao hàng</p>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-400 uppercase text-[10px] border-y border-slate-200">
+                <tr>
+                    <th class="p-3">Mã Đơn / Ngày Đặt</th>
+                    <th class="p-3">Khách Hàng</th>
+                    <th class="p-3">Giao Hàng & Khung Giờ</th>
+                    <th class="p-3">Phí Ship & Tổng Tiền</th>
+                    <th class="p-3">Tiến Độ Vận Chuyển</th>
+                    <th class="p-3">Cập Nhật Trạng Thái & Shipper</th>
+                    <th class="p-3 text-right">Chi Tiết</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium">
+                {% for order in orders %}
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <!-- Mã & Giờ -->
+                    <td class="p-3">
+                        <span class="font-mono font-bold text-slate-900 block text-xs">{{ order.order_code }}</span>
+                        <span class="text-[10px] text-slate-400">{{ order.created_at }}</span>
+                    </td>
+
+                    <!-- Khách hàng -->
+                    <td class="p-3">
+                        <strong class="text-slate-800 block">{{ order.customer_name }}</strong>
+                        <span class="text-[11px] text-slate-500">{{ order.customer_phone }}</span>
+                    </td>
+
+                    <!-- Địa chỉ & Khung giờ -->
+                    <td class="p-3 max-w-xs">
+                        <span class="text-slate-700 block truncate" title="{{ order.shipping_address }}">{{ order.shipping_address }}</span>
+                        <span class="text-[10px] text-fresh-700 font-semibold block mt-0.5">
+                            <i class="fa-regular fa-clock mr-1"></i> {{ order.delivery_time_slot or 'Bất kỳ' }}
+                        </span>
+                        <span class="inline-block mt-1 text-[10px] font-bold px-1.5 py-0.2 rounded {% if order.delivery_type == 'express_2h' %}bg-amber-100 text-amber-800{% else %}bg-slate-100 text-slate-700{% endif %}">
+                            {{ 'Hỏa tốc 2H' if order.delivery_type == 'express_2h' else 'Giao tiêu chuẩn' }}
+                        </span>
+                    </td>
+
+                    <!-- Phí ship & Tổng hóa đơn -->
+                    <td class="p-3">
+                        <span class="text-xs font-black text-rose-600 block">{{ order.total_amount | currency }}</span>
+                        <span class="text-[10px] text-slate-400 block">
+                            Ship: {% if order.shipping_fee == 0 %}Freeship{% else %}{{ order.shipping_fee | currency }}{% endif %}
+                        </span>
+                    </td>
+
+                    <!-- Tiến độ giao hàng -->
+                    <td class="p-3">
+                        {% if order.delivery_status == 'preparing' %}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 block w-fit mb-1">
+                                Đang đóng gói
+                            </span>
+                        {% elif order.delivery_status == 'delivering' %}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 block w-fit mb-1">
+                                Đang giao hàng
+                            </span>
+                        {% else %}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 block w-fit mb-1">
+                                Đã giao xong
+                            </span>
+                        {% endif %}
+                        {% if order.shipper_name %}
+                            <span class="text-[10px] text-slate-500 block truncate" title="{{ order.shipper_name }}">
+                                <i class="fa-solid fa-person-biking mr-1"></i> {{ order.shipper_name }}
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Form cập nhật trạng thái, giao hàng & shipper -->
+                    <td class="p-3">
+                        <form action="{{ url_for('admin_order_update_status', order_id=order.id) }}" method="POST" class="flex flex-col gap-1.5">
+                            <div class="flex items-center gap-1">
+                                <select name="order_status" class="p-1 border border-slate-200 rounded-lg text-[10px] bg-white font-semibold" title="Trạng thái đơn">
+                                    <option value="pending" {% if order.order_status == 'pending' %}selected{% endif %}>Chờ duyệt</option>
+                                    <option value="confirmed" {% if order.order_status == 'confirmed' %}selected{% endif %}>Đã duyệt</option>
+                                    <option value="shipping" {% if order.order_status == 'shipping' %}selected{% endif %}>Đang giao</option>
+                                    <option value="completed" {% if order.order_status == 'completed' %}selected{% endif %}>Hoàn thành</option>
+                                    <option value="cancelled" {% if order.order_status == 'cancelled' %}selected{% endif %}>Đã hủy</option>
+                                </select>
+
+                                <select name="delivery_status" class="p-1 border border-slate-200 rounded-lg text-[10px] bg-white font-semibold" title="Tiến độ giao">
+                                    <option value="preparing" {% if order.delivery_status == 'preparing' %}selected{% endif %}>Đóng gói</option>
+                                    <option value="delivering" {% if order.delivery_status == 'delivering' %}selected{% endif %}>Đang giao</option>
+                                    <option value="delivered" {% if order.delivery_status == 'delivered' %}selected{% endif %}>Đã giao</option>
+                                </select>
+
+                                <select name="payment_status" class="p-1 border border-slate-200 rounded-lg text-[10px] bg-white font-semibold" title="Thanh toán">
+                                    <option value="unpaid" {% if order.payment_status == 'unpaid' %}selected{% endif %}>Chưa TT</option>
+                                    <option value="paid" {% if order.payment_status == 'paid' %}selected{% endif %}>Đã TT</option>
+                                </select>
+                            </div>
+
+                            <div class="flex items-center gap-1">
+                                <input type="text" name="shipper_name" value="{{ order.shipper_name or '' }}" placeholder="Tên Shipper & SĐT"
+                                       class="p-1 border border-slate-200 rounded-lg text-[10px] bg-white flex-1 focus:outline-none">
+                                <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white px-2 py-1 rounded-lg text-[10px] font-bold transition-colors">
+                                    Lưu
+                                </button>
+                            </div>
+                        </form>
+                    </td>
+
+                    <!-- Chi tiết -->
+                    <td class="p-3 text-right">
+                        <a href="{{ url_for('view_order', order_code=order.order_code) }}" target="_blank" class="text-blue-600 hover:underline font-semibold">
+                            Hóa đơn &rarr;
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

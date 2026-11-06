@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Thanh Toán & Đặt Lịch Giao Hàng — {{ store_name }}{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav class="flex items-center text-xs text-slate-500 mb-6 space-x-2">
+    <a href="{{ url_for('index') }}" class="hover:text-fresh-600">Trang chủ</a>
+    <span>/</span>
+    <a href="{{ url_for('cart') }}" class="hover:text-fresh-600">Giỏ hàng</a>
+    <span>/</span>
+    <span class="text-slate-800 font-semibold">Thanh toán & Giao hàng</span>
+</nav>
+
+<div class="mb-6">
+    <h1 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+        <i class="fa-solid fa-credit-card text-fresh-600"></i>
+        <span>Thanh Toán & Đặt Lịch Giao Hàng</span>
+    </h1>
+    <p class="text-xs text-slate-500">Vui lòng kiểm tra thông tin người nhận, lịch hẹn giao hàng và phương thức thanh toán</p>
+</div>
+
+<form action="{{ url_for('checkout') }}" method="POST">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- 1. THÔNG TIN GIAO HÀNG & PHƯƠNG THỨC -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Thông tin người nhận -->
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-map-location-dot text-fresh-600"></i>
+                    <span>1. Thông Tin Người Nhận</span>
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1.5">Họ và tên người nhận <span class="text-rose-500">*</span></label>
+                        <input type="text" name="customer_name" required 
+                               value="{{ user.fullname if user else '' }}" placeholder="Nguyễn Văn An"
+                               class="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600">
+                    </div>
+
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1.5">Số điện thoại liên hệ <span class="text-rose-500">*</span></label>
+                        <input type="tel" name="customer_phone" required 
+                               value="{{ user.phone if user else '' }}" placeholder="0912345678"
+                               class="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600">
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="font-bold text-slate-700 block mb-1.5">Địa chỉ email (để nhận hóa đơn & mã tra cứu)</label>
+                        <input type="email" name="customer_email" 
+                               value="{{ user.email if user else '' }}" placeholder="nguyenan@gmail.com"
+                               class="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600">
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="font-bold text-slate-700 block mb-1.5">Địa chỉ giao hàng chi tiết <span class="text-rose-500">*</span></label>
+                        <input type="text" name="shipping_address" required 
+                               value="{{ user.address if user else '' }}" placeholder="Số nhà, tên ngõ, tên đường, phường/xã, quận/huyện..."
+                               class="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PHƯƠNG THỨC & THỜI GIAN GIAO HÀNG -->
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-truck-ramp-box text-fresh-600"></i>
+                    <span>2. Lựa Chọn Phương Thức & Khung Giờ Giao Hàng</span>
+                </h2>
+
+                <div class="space-y-4 text-xs">
+                    <!-- Loại giao hàng -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label class="flex items-start gap-2.5 p-3.5 border rounded-2xl cursor-pointer hover:bg-fresh-50/40 has-[:checked]:border-fresh-600 has-[:checked]:bg-fresh-50/30 transition-all">
+                            <input type="radio" name="delivery_type" value="standard" {% if cart.delivery_type != 'express_2h' %}checked{% endif %} class="mt-0.5 text-fresh-600 focus:ring-fresh-500">
+                            <div>
+                                <span class="font-bold text-slate-800 block">Giao tiêu chuẩn trong ngày</span>
+                                <span class="text-slate-500 block text-[11px] mt-0.5">
+                                    Phí: {% if cart.subtotal >= 300000 %}<strong class="text-emerald-600 font-bold">0 đ (Freeship)</strong>{% else %}20.000 đ{% endif %}
+                                </span>
+                            </div>
+                        </label>
+
+                        <label class="flex items-start gap-2.5 p-3.5 border rounded-2xl cursor-pointer hover:bg-fresh-50/40 has-[:checked]:border-fresh-600 has-[:checked]:bg-fresh-50/30 transition-all">
+                            <input type="radio" name="delivery_type" value="express_2h" {% if cart.delivery_type == 'express_2h' %}checked{% endif %} class="mt-0.5 text-fresh-600 focus:ring-fresh-500">
+                            <div>
+                                <span class="font-bold text-slate-800 flex items-center gap-1.5">
+                                    <span>Giao siêu tốc 2 giờ</span>
+                                    <span class="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.2 rounded font-black">2H</span>
+                                </span>
+                                <span class="text-slate-500 block text-[11px] mt-0.5">
+                                    Phí: {% if cart.subtotal >= 300000 %}<strong class="text-emerald-600 font-bold">15.000 đ (Ưu đãi)</strong>{% else %}35.000 đ{% endif %}
+                                </span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Khung giờ nhận hàng mong muốn -->
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1.5">Khung giờ nhận hàng mong muốn</label>
+                        <select name="delivery_time_slot" class="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600 text-xs bg-white">
+                            <option value="Bất kỳ lúc nào trong ngày">Bất kỳ lúc nào (Shipper giao sớm nhất có thể)</option>
+                            <option value="08:00 - 11:00 (Buổi Sáng)">08:00 - 11:00 (Buổi Sáng)</option>
+                            <option value="14:00 - 17:00 (Buổi Chiều)">14:00 - 17:00 (Buổi Chiều)</option>
+                            <option value="18:00 - 20:00 (Buổi Tối)">18:00 - 20:00 (Buổi Tối)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1.5">Ghi chú cho tài xế giao hàng</label>
+                        <textarea name="note" rows="2" placeholder="Ví dụ: Gọi trước khi đến 10 phút, gửi lễ tân..."
+                                  class="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-fresh-600"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phương thức thanh toán -->
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-wallet text-amber-500"></i>
+                    <span>3. Phương Thức Thanh Toán</span>
+                </h2>
+
+                <div class="space-y-3 text-xs">
+                    <!-- COD -->
+                    <label class="flex items-center gap-3 p-4 border border-slate-200 rounded-2xl cursor-pointer hover:bg-fresh-50/50 has-[:checked]:border-fresh-600 has-[:checked]:bg-fresh-50/30 transition-all">
+                        <input type="radio" name="payment_method" value="cod" checked class="text-fresh-600 focus:ring-fresh-500">
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg flex-shrink-0">
+                            <i class="fa-solid fa-money-bill-wave"></i>
+                        </div>
+                        <div class="flex-grow">
+                            <span class="font-bold text-slate-800 text-sm block">Thanh toán khi nhận hàng (COD)</span>
+                            <span class="text-slate-500">Nhận thực phẩm tươi ngon, kiểm tra rồi mới thanh toán tiền mặt</span>
+                        </div>
+                    </label>
+
+                    <!-- VietQR Banking -->
+                    <label class="flex items-center gap-3 p-4 border border-slate-200 rounded-2xl cursor-pointer hover:bg-fresh-50/50 has-[:checked]:border-fresh-600 has-[:checked]:bg-fresh-50/30 transition-all">
+                        <input type="radio" name="payment_method" value="banking" class="text-fresh-600 focus:ring-fresh-500">
+                        <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-lg flex-shrink-0">
+                            <i class="fa-solid fa-qrcode"></i>
+                        </div>
+                        <div class="flex-grow">
+                            <span class="font-bold text-slate-800 text-sm block">Chuyển khoản VietQR (Quét mã tự động)</span>
+                            <span class="text-slate-500">Hỗ trợ tất cả ngân hàng (MBBank, Vietcombank, Techcombank, MoMo...)</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. TỔNG HỢP HÓA ĐƠN & SỐ LƯỢNG MÓN -->
+        <div class="space-y-6">
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                <h3 class="font-bold text-slate-900 text-sm pb-3 border-b border-slate-100 flex items-center justify-between">
+                    <span>Đơn Hàng ({{ cart.item_list | length }} sản phẩm)</span>
+                    <a href="{{ url_for('cart') }}" class="text-xs text-fresh-600 hover:underline">Sửa giỏ hàng</a>
+                </h3>
+
+                <!-- Danh sách món có HSD và Số lượng -->
+                <div class="divide-y divide-slate-50 max-h-72 overflow-y-auto pr-1">
+                    {% for item in cart.item_list %}
+                    <div class="py-2.5 flex items-center gap-3 text-xs">
+                        <img src="{{ item.image_url }}" alt="{{ item.name }}" class="w-12 h-12 rounded-lg object-cover border border-slate-100 flex-shrink-0">
+                        <div class="flex-grow">
+                            <p class="font-semibold text-slate-800 line-clamp-1">{{ item.name }}</p>
+                            <span class="text-slate-400 text-[11px] block">{{ item.quantity }} {{ item.unit }} x {{ item.price | currency }}</span>
+                            <span class="text-[10px] text-emerald-700 font-bold">HSD: {{ item.expiry_date }}</span>
+                        </div>
+                        <span class="font-bold text-slate-800">{{ item.subtotal | currency }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <hr class="border-slate-100">
+
+                <!-- Chi tiết tổng hóa đơn -->
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between text-slate-600">
+                        <span>Tiền hàng (Tạm tính):</span>
+                        <span class="font-semibold text-slate-800">{{ cart.subtotal | currency }}</span>
+                    </div>
+
+                    <div class="flex justify-between text-slate-600">
+                        <span>Phí giao hàng:</span>
+                        <span>
+                            {% if cart.shipping_fee == 0 %}
+                                <strong class="text-emerald-600 font-bold">Miễn phí (0 đ)</strong>
+                            {% else %}
+                                <strong class="text-slate-800">{{ cart.shipping_fee | currency }}</strong>
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    {% if cart.discount > 0 %}
+                    <div class="flex justify-between text-emerald-600 font-semibold">
+                        <span>Giảm giá ({{ cart.coupon_code }}):</span>
+                        <span>-{{ cart.discount | currency }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="flex justify-between items-baseline pt-2 border-t border-slate-100">
+                        <span class="text-sm font-bold text-slate-900">Tổng hóa đơn:</span>
+                        <span class="text-2xl font-black text-rose-600">{{ cart.total | currency }}</span>
+                    </div>
+                </div>
+
+                <!-- Nút Xác nhận đặt hàng -->
+                <button type="submit" class="w-full bg-fresh-600 hover:bg-fresh-700 text-white font-extrabold py-4 px-4 rounded-2xl text-center block text-sm transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <i class="fa-solid fa-check-circle mr-1.5"></i> Hoàn Tất Đặt Hàng
+                </button>
+
+                <p class="text-[11px] text-slate-400 text-center leading-relaxed">
+                    Đảm bảo độ tươi ngon 100% khi nhận hàng. Được đổi trả miễn phí trong 24 giờ.
+                </p>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

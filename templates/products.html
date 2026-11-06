@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if selected_category %}{{ selected_category.name }} — {% elif keyword %}Tìm kiếm: {{ keyword }} — {% endif %}Sản Phẩm — {{ store_name }}
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav class="flex items-center text-xs text-slate-500 mb-6 space-x-2">
+    <a href="{{ url_for('index') }}" class="hover:text-fresh-600">Trang chủ</a>
+    <span>/</span>
+    <a href="{{ url_for('products') }}" class="hover:text-fresh-600">Sản phẩm</a>
+    {% if selected_category %}
+        <span>/</span>
+        <span class="text-slate-800 font-semibold">{{ selected_category.name }}</span>
+    {% elif keyword %}
+        <span>/</span>
+        <span class="text-slate-800 font-semibold">Tìm kiếm: "{{ keyword }}"</span>
+    {% endif %}
+</nav>
+
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <!-- 1. SIDEBAR FILTER -->
+    <aside class="lg:col-span-1 space-y-6">
+        <form id="filter-form" action="{{ url_for('products') }}" method="GET" class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-6">
+            {% if keyword %}
+                <input type="hidden" name="q" value="{{ keyword }}">
+            {% endif %}
+
+            <!-- Lọc theo Danh mục -->
+            <div>
+                <h3 class="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-list text-fresh-600"></i>
+                    <span>Danh Mục Hàng</span>
+                </h3>
+                <div class="space-y-1.5 text-xs">
+                    <label class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 cursor-pointer {% if not current_category_id %}bg-fresh-50 font-bold text-fresh-700{% endif %}">
+                        <input type="radio" name="category" value="" onchange="this.form.submit()" class="text-fresh-600 focus:ring-fresh-500" {% if not current_category_id %}checked{% endif %}>
+                        <span>Tất cả danh mục</span>
+                    </label>
+                    {% for cat in all_categories %}
+                    <label class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 cursor-pointer {% if current_category_id == cat.id %}bg-fresh-50 font-bold text-fresh-700{% endif %}">
+                        <input type="radio" name="category" value="{{ cat.id }}" onchange="this.form.submit()" class="text-fresh-600 focus:ring-fresh-500" {% if current_category_id == cat.id %}checked{% endif %}>
+                        <span>{{ cat.name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <hr class="border-slate-100">
+
+            <!-- Lọc theo Khoảng Giá -->
+            <div>
+                <h3 class="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-coins text-amber-500"></i>
+                    <span>Khoảng Giá (VNĐ)</span>
+                </h3>
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <div>
+                        <label class="text-[11px] text-slate-400 block mb-1">Từ giá</label>
+                        <input type="number" name="min_price" value="{{ min_price or '' }}" placeholder="0" class="w-full text-xs p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-fresh-600">
+                    </div>
+                    <div>
+                        <label class="text-[11px] text-slate-400 block mb-1">Đến giá</label>
+                        <input type="number" name="max_price" value="{{ max_price or '' }}" placeholder="500000" class="w-full text-xs p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-fresh-600">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold py-2 rounded-xl transition-colors">
+                    Áp dụng giá
+                </button>
+            </div>
+
+            <hr class="border-slate-100">
+
+            <!-- Nút Reset bộ lọc -->
+            <a href="{{ url_for('products') }}" class="block text-center text-xs font-bold text-rose-600 hover:text-rose-700 p-2 rounded-xl border border-rose-200 hover:bg-rose-50 transition-colors">
+                <i class="fa-solid fa-rotate-left mr-1"></i> Xóa tất cả bộ lọc
+            </a>
+        </form>
+    </aside>
+
+    <!-- 2. PRODUCT LISTING -->
+    <main class="lg:col-span-3">
+        <!-- Top Toolbar -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h1 class="text-lg md:text-xl font-black text-slate-900">
+                    {% if selected_category %}
+                        {{ selected_category.name }}
+                    {% elif keyword %}
+                        Kết quả cho: "{{ keyword }}"
+                    {% else %}
+                        Tất Cả Sản Phẩm
+                    {% endif %}
+                </h1>
+                <p class="text-xs text-slate-500">Tìm thấy <strong class="text-fresh-700">{{ total_items }}</strong> sản phẩm phù hợp</p>
+            </div>
+
+            <!-- Sắp xếp -->
+            <div class="flex items-center gap-2 text-xs">
+                <span class="text-slate-500 hidden sm:inline">Sắp xếp theo:</span>
+                <select name="sort" onchange="location = this.value;" class="border border-slate-200 rounded-xl px-3 py-2 text-xs bg-slate-50 focus:outline-none focus:border-fresh-600 font-medium">
+                    <option value="{{ url_for('products', category=current_category_id, q=keyword, min_price=min_price, max_price=max_price, sort='default') }}" {% if sort_by == 'default' %}selected{% endif %}>Mới nhất</option>
+                    <option value="{{ url_for('products', category=current_category_id, q=keyword, min_price=min_price, max_price=max_price, sort='price_asc') }}" {% if sort_by == 'price_asc' %}selected{% endif %}>Giá: Thấp đến Cao</option>
+                    <option value="{{ url_for('products', category=current_category_id, q=keyword, min_price=min_price, max_price=max_price, sort='price_desc') }}" {% if sort_by == 'price_desc' %}selected{% endif %}>Giá: Cao xuống Thấp</option>
+                    <option value="{{ url_for('products', category=current_category_id, q=keyword, min_price=min_price, max_price=max_price, sort='featured') }}" {% if sort_by == 'featured' %}selected{% endif %}>Bán chạy nhất</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Grid Sản Phẩm -->
+        {% if products %}
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+                {% for p in products %}
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all card-hover overflow-hidden flex flex-col relative group">
+                    {% if p.original_price and p.original_price > p.price %}
+                        {% set discount_pct = ((p.original_price - p.price) / p.original_price * 100) | round | int %}
+                        <span class="discount-badge">-{{ discount_pct }}%</span>
+                    {% endif %}
+
+                    <a href="{{ url_for('product_detail', product_id=p.id) }}" class="relative block overflow-hidden aspect-square bg-slate-50">
+                        <img src="{{ p.image_url }}" alt="{{ p.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    </a>
+
+                    <div class="p-3.5 flex flex-col flex-grow">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-[10px] font-semibold text-fresh-600 uppercase tracking-wider">{{ p.category_name }}</span>
+                            {% if p.expiry_date %}
+                            <span class="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded font-bold" title="Hạn sử dụng">
+                                HSD: {{ p.expiry_date }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <a href="{{ url_for('product_detail', product_id=p.id) }}" class="font-bold text-slate-800 text-sm hover:text-fresh-600 line-clamp-2 mb-2 leading-snug">
+                            {{ p.name }}
+                        </a>
+
+                        <div class="mt-auto pt-2 border-t border-slate-50">
+                            <div class="flex items-baseline gap-1.5 mb-2">
+                                <span class="text-base font-extrabold text-rose-600">{{ p.price | currency }}</span>
+                                {% if p.original_price and p.original_price > p.price %}
+                                    <span class="text-xs text-slate-400 line-through">{{ p.original_price | currency }}</span>
+                                {% endif %}
+                                <span class="text-[11px] text-slate-500 ml-auto">/ {{ p.unit }}</span>
+                            </div>
+
+                            <form action="{{ url_for('cart_add', product_id=p.id) }}" method="POST" class="ajax-add-to-cart">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="w-full bg-fresh-50 hover:bg-fresh-600 text-fresh-700 hover:text-white font-bold py-2 px-3 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                                    <i class="fa-solid fa-cart-plus"></i>
+                                    <span>Thêm vào giỏ</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Phân Trang (Pagination) -->
+            {% if total_pages > 1 %}
+            <div class="flex items-center justify-center space-x-1.5 text-xs font-semibold">
+                {% if current_page > 1 %}
+                    <a href="{{ url_for('products', page=current_page-1, category=current_category_id, q=keyword, min_price=min_price, max_price=max_price, sort=sort_by) }}" 
+                       class="px-3.5 py-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-700">
+                        <i class="fa-solid fa-chevron-left mr-1"></i> Trước
+                    </a>
+                {% endif %}
+
+                {% for p_num in range(1, total_pages + 1) %}
+                    <a href="{{ url_for('products', page=p_num, category=current_category_id, q=keyword, min_price=min_price, max_price=max_price, sort=sort_by) }}"
+                       class="px-3.5 py-2 rounded-xl border {% if p_num == current_page %}bg-fresh-600 text-white border-fresh-600 font-bold{% else %}bg-white border-slate-200 text-slate-700 hover:bg-slate-50{% endif %}">
+                        {{ p_num }}
+                    </a>
+                {% endfor %}
+
+                {% if current_page < total_pages %}
+                    <a href="{{ url_for('products', page=current_page+1, category=current_category_id, q=keyword, min_price=min_price, max_price=max_price, sort=sort_by) }}" 
+                       class="px-3.5 py-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-700">
+                        Sau <i class="fa-solid fa-chevron-right ml-1"></i>
+                    </a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+        {% else %}
+            <!-- Không tìm thấy sản phẩm -->
+            <div class="bg-white rounded-3xl p-12 text-center border border-slate-100 shadow-sm">
+                <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-3xl text-slate-400 mx-auto mb-4">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-800 mb-1">Không tìm thấy sản phẩm phù hợp</h3>
+                <p class="text-xs text-slate-500 max-w-sm mx-auto mb-5">Vui lòng thử tìm kiếm với từ khóa khác hoặc điều chỉnh lại bộ lọc giá / danh mục.</p>
+                <a href="{{ url_for('products') }}" class="inline-block bg-fresh-600 text-white font-bold px-5 py-2.5 rounded-full text-xs shadow hover:bg-fresh-700">
+                    Xem tất cả sản phẩm
+                </a>
+            </div>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

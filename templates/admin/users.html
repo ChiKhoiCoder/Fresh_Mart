@@ -1,0 +1,56 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}Quản Lý Người Dùng{% endblock %}
+{% block header_title %}Quản Lý Tài Khoản Khách Hàng & Quản Trị Viên{% endblock %}
+
+{% block admin_content %}
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div>
+            <h2 class="font-bold text-slate-800 text-base">Danh Sách Tài Khoản Người Dùng ({{ users | length }})</h2>
+            <p class="text-xs text-slate-500">Thông tin các thành viên đã đăng ký trong hệ thống FreshMart</p>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-400 uppercase text-[10px] border-y border-slate-200">
+                <tr>
+                    <th class="p-3">ID</th>
+                    <th class="p-3">Họ và Tên</th>
+                    <th class="p-3">Tên Đăng Nhập</th>
+                    <th class="p-3">Email Liên Hệ</th>
+                    <th class="p-3">Số Điện Thoại</th>
+                    <th class="p-3">Địa Chỉ</th>
+                    <th class="p-3 text-center">Vai Trò</th>
+                    <th class="p-3 text-right">Ngày Tham Gia</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium">
+                {% for u in users %}
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="p-3 text-slate-400 font-mono">#{{ u.id }}</td>
+                    <td class="p-3 font-bold text-slate-800">{{ u.fullname }}</td>
+                    <td class="p-3 font-mono text-slate-600">{{ u.username }}</td>
+                    <td class="p-3 text-slate-600">{{ u.email }}</td>
+                    <td class="p-3 text-slate-600">{{ u.phone or '---' }}</td>
+                    <td class="p-3 max-w-xs truncate text-slate-500" title="{{ u.address }}">{{ u.address or '---' }}</td>
+                    <td class="p-3 text-center">
+                        {% if u.role == 'admin' %}
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                                <i class="fa-solid fa-crown mr-1"></i> Quản trị
+                            </span>
+                        {% else %}
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-fresh-100 text-fresh-800">
+                                <i class="fa-solid fa-user mr-1"></i> Khách hàng
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3 text-right text-slate-400 text-[11px]">{{ u.created_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

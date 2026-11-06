@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Bảng Điều Khiển Quản Trị{% endblock %} — FreshMart Admin</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        fresh: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-slate-100 flex min-h-screen text-slate-800">
+
+    <!-- 1. SIDEBAR -->
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 min-h-screen">
+        <!-- Logo -->
+        <div class="p-5 border-b border-slate-800 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-fresh-600 flex items-center justify-center text-white text-lg shadow-md">
+                <i class="fa-solid fa-leaf"></i>
+            </div>
+            <div>
+                <span class="text-lg font-black text-white tracking-tight">Fresh<span class="text-amber-400">Mart</span></span>
+                <span class="block text-[10px] text-fresh-400 font-bold uppercase tracking-wider">Hệ thống Quản trị</span>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="p-4 space-y-1.5 flex-grow text-xs font-semibold">
+            <a href="{{ url_for('admin_dashboard') }}" 
+               class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors hover:bg-slate-800 hover:text-white {% if request.endpoint == 'admin_dashboard' %}bg-fresh-600 text-white font-bold{% endif %}">
+                <i class="fa-solid fa-gauge-high text-sm w-5 text-center"></i>
+                <span>Tổng Quan (Dashboard)</span>
+            </a>
+
+            <a href="{{ url_for('admin_products') }}" 
+               class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors hover:bg-slate-800 hover:text-white {% if 'product' in request.endpoint and request.endpoint != 'products' %}bg-fresh-600 text-white font-bold{% endif %}">
+                <i class="fa-solid fa-boxes-stacked text-sm w-5 text-center"></i>
+                <span>Quản Lý Sản Phẩm</span>
+            </a>
+
+            <a href="{{ url_for('admin_categories') }}" 
+               class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors hover:bg-slate-800 hover:text-white {% if request.endpoint == 'admin_categories' %}bg-fresh-600 text-white font-bold{% endif %}">
+                <i class="fa-solid fa-layer-group text-sm w-5 text-center"></i>
+                <span>Quản Lý Danh Mục</span>
+            </a>
+
+            <a href="{{ url_for('admin_orders') }}" 
+               class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors hover:bg-slate-800 hover:text-white {% if request.endpoint == 'admin_orders' %}bg-fresh-600 text-white font-bold{% endif %}">
+                <i class="fa-solid fa-cart-flatbed text-sm w-5 text-center"></i>
+                <span>Quản Lý Đơn Hàng</span>
+            </a>
+
+            <a href="{{ url_for('admin_users') }}" 
+               class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors hover:bg-slate-800 hover:text-white {% if request.endpoint == 'admin_users' %}bg-fresh-600 text-white font-bold{% endif %}">
+                <i class="fa-solid fa-users text-sm w-5 text-center"></i>
+                <span>Quản Lý Người Dùng</span>
+            </a>
+
+            <div class="pt-6 pb-2 px-3 text-[10px] text-slate-500 uppercase tracking-widest font-bold">Lối tắt</div>
+
+            <a href="{{ url_for('index') }}" target="_blank"
+               class="flex items-center gap-3 px-3 py-2 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+                <i class="fa-solid fa-arrow-up-right-from-square text-sm w-5 text-center"></i>
+                <span>Xem Cửa Hàng Client</span>
+            </a>
+        </nav>
+
+        <!-- Current Admin Footer -->
+        <div class="p-4 border-t border-slate-800 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-fresh-600 text-white flex items-center justify-center font-bold">
+                    {{ current_user.fullname[:1] | upper }}
+                </div>
+                <div>
+                    <span class="block font-bold text-white text-xs truncate max-w-[100px]">{{ current_user.fullname }}</span>
+                    <span class="block text-[10px] text-amber-400">Quản trị viên</span>
+                </div>
+            </div>
+            <a href="{{ url_for('logout') }}" class="text-rose-400 hover:text-rose-300 p-2" title="Đăng xuất">
+                <i class="fa-solid fa-power-off"></i>
+            </a>
+        </div>
+    </aside>
+
+    <!-- 2. MAIN ADMIN CONTENT -->
+    <div class="flex-grow flex flex-col min-h-screen overflow-x-hidden">
+        <!-- Top header -->
+        <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+            <h1 class="text-lg font-bold text-slate-800">
+                {% block header_title %}Bảng Điều Khiển FreshMart Admin{% endblock %}
+            </h1>
+            <div class="flex items-center gap-3 text-xs">
+                <span class="px-3 py-1 bg-emerald-50 text-emerald-700 font-bold rounded-full border border-emerald-200">
+                    <i class="fa-solid fa-server mr-1"></i> SQLite Database: Connected
+                </span>
+                <a href="{{ url_for('index') }}" class="bg-fresh-600 text-white font-bold px-3 py-1.5 rounded-lg hover:bg-fresh-700">
+                    <i class="fa-solid fa-store mr-1"></i> Đến Siêu Thị
+                </a>
+            </div>
+        </header>
+
+        <!-- Flash messages -->
+        <div class="px-6 pt-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="p-3 mb-2 rounded-xl text-xs font-medium flex items-center justify-between shadow-sm
+                            {% if category == 'success' %} bg-emerald-50 text-emerald-800 border border-emerald-200
+                            {% elif category in ['danger', 'error'] %} bg-rose-50 text-rose-800 border border-rose-200
+                            {% elif category == 'warning' %} bg-amber-50 text-amber-800 border border-amber-200
+                            {% else %} bg-sky-50 text-sky-800 border border-sky-200 {% endif %}">
+                            <span>{{ message }}</span>
+                            <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Body content -->
+        <main class="p-6 flex-grow">
+            {% block admin_content %}{% endblock %}
+        </main>
+    </div>
+
+</body>
+</html>
