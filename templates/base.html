@@ -5,8 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ store_name }}{% endblock %}</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cloudflare.com"></script>
+    <!-- Google Fonts preconnect (tốc độ tối ưu) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
+    <!-- Tailwind CSS (local – không phụ thuộc CDN ngoài) -->
+    <script src="{{ url_for('static', filename='js/tailwind.min.js') }}"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -25,10 +29,10 @@
             }
         }
     </script>
-    <!-- Font Awesome 6 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Font Awesome 6 (local – không phụ thuộc CDN ngoài) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='libs/fontawesome/css/all.min.css') }}">
+    <!-- SweetAlert2 (local – không phụ thuộc CDN ngoài) -->
+    <script src="{{ url_for('static', filename='libs/sweetalert2.all.min.js') }}"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block extra_head %}{% endblock %}
