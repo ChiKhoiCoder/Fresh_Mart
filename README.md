@@ -1,6 +1,6 @@
 # FreshMart — Nền Tảng Siêu Thị Thực Phẩm Trực Tuyến
 
-> **Đồ án Lập trình Web / Cơ sở dữ liệu Python — Kì 1**  
+> **Đồ án Lập trình Web / Cơ sở dữ liệu Python — Kì 1**
 > Dự án xây dựng một hệ thống siêu thị thực phẩm tươi sạch trực tuyến hoàn chỉnh với kết nối Cơ sở dữ liệu SQLite, giao diện tương thích đa thiết bị và đầy đủ nghiệp vụ thương mại điện tử: **Quản lý số lượng tồn kho, Hạn sử dụng, Giao hàng, Tính phí vận chuyển và Tổng hóa đơn**.
 
 ---
@@ -10,6 +10,7 @@
 **FreshMart** là nền tảng thương mại điện tử chuyên cung cấp rau củ quả hữu cơ, trái cây đặc sản, thịt cá tươi sống, trứng sữa và đồ khô dinh dưỡng đạt chuẩn VietGAP. Dự án được thiết kế theo mô hình MVC hiện đại, phân chia rõ ràng giữa tầng dữ liệu (Models), logic điều hướng (Controllers) và giao diện hiển thị (Templates).
 
 ### Các phân hệ nâng cấp mới:
+
 1. **Quản lý Số lượng (Stock & Quantity Management)**:
    - Kiểm tra tồn kho thời gian thực khi thêm vào giỏ hàng và cập nhật số lượng.
    - Giới hạn số lượng mua tối đa bằng số lượng tồn kho thực tế, tự động cảnh báo khi vượt quá tồn kho.
@@ -74,6 +75,7 @@ FreshMart/
 ## 3. Lược Đồ Cơ Sở Dữ Liệu (Database Schema)
 
 CSDL bao gồm các bảng quan hệ chuẩn hóa:
+
 1. `users`: Tài khoản khách hàng và quản trị viên (`username`, `password_hash`, `role`...).
 2. `categories`: Danh mục thực phẩm (`name`, `slug`, `icon`, `description`...).
 3. `products`: Sản phẩm với thông tin số lượng tồn kho (`stock`), ngày sản xuất (`manufacturing_date`), hạn sử dụng (`expiry_date`), thời hạn bảo quản (`shelf_life`).
@@ -86,30 +88,35 @@ CSDL bao gồm các bảng quan hệ chuẩn hóa:
 ## 4. Hướng Dẫn Cài Đặt & Khởi Chạy
 
 ### Cách 1: Khởi chạy 1-Click (Khuyến nghị trên Windows)
+
 Nhấp đúp chuột vào file:
+
 ```
 run.bat
 ```
+
 *(File sẽ tự động kiểm tra Python, cài đặt thư viện cần thiết, tự động cập nhật CSDL và mở trình duyệt web tại `http://127.0.0.1:5000`)*.
 
 ### Cách 2: Khởi chạy thủ công qua Terminal / CMD / PowerShell
+
 ```bash
 cd "d:\Project Kì 1\FreshMart"
 py -m pip install -r requirements.txt
 py database.py
 py app.py
 ```
+
 Sau đó truy cập trình duyệt tại: **`http://127.0.0.1:5000`**
 
 ---
 
 ## 5. Tài Khoản Mẫu Trải Nghiệm & Chấm Điểm
 
-| Vai trò | Tên đăng nhập | Mật khẩu | Chức năng kiểm thử |
-|---|---|---|---|
-| **Quản trị viên (Admin)** | `admin` | `admin123` | Quản lý kho hàng, cập nhật HSD & số lượng tồn kho, duyệt đơn, điều phối shipper |
-| **Khách hàng** | `khachhang` | `123456` | Mua sắm, kiểm tra HSD, tăng giảm số lượng, chọn giờ giao hàng, in hóa đơn |
+| Vai trò                           | Tên đăng nhập | Mật khẩu   | Chức năng kiểm thử                                                                         |
+| ---------------------------------- | ----------------- | ------------ | ---------------------------------------------------------------------------------------------- |
+| **Quản trị viên (Admin)** | `admin`         | `admin123` | Quản lý kho hàng, cập nhật HSD & số lượng tồn kho, duyệt đơn, điều phối shipper |
+| **Khách hàng**             | `khachhang`     | `123456`   | Mua sắm, kiểm tra HSD, tăng giảm số lượng, chọn giờ giao hàng, in hóa đơn         |
 
 > [!TIP]
-> Tại trang **Đăng nhập**, có sẵn 2 nút bấm **"Admin"** và **"Khách hàng"** để tự động điền tài khoản chỉ với 1 cú click chuột!  
+> Tại trang **Đăng nhập**, có sẵn 2 nút bấm **"Admin"** và **"Khách hàng"** để tự động điền tài khoản chỉ với 1 cú click chuột!
 > **Mã voucher thử nghiệm**: `FRESHMART10` (Giảm 10%), `GIAM20K` (Giảm 20.000đ).
