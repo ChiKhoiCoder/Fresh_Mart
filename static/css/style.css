@@ -1,9 +1,10 @@
 /* ==========================================================================
-   FRESHMART — BỘ CSS HOÀN CHỈNH & CHỐNG LỖI HIỂN THỊ TRÊN AZURE CLOUD
+   FRESHMART — BỘ CSS CAO CẤP CHỐNG VỠ MÀU & CHUẨN TƯƠNG PHẢN CHO AZURE CLOUD
    ========================================================================== */
 
-/* 1. Reset nền & Font chữ toàn trang */
+/* 1. Thiết lập Light Theme tuyệt đối & Bảng màu thương hiệu */
 :root {
+    color-scheme: light !important;
     --fresh-50:  #f0fdf4;
     --fresh-100: #dcfce7;
     --fresh-200: #bbf7d0;
@@ -19,78 +20,102 @@
     --primary-dark: #15803d;
     --primary-light: #dcfce7;
     --secondary: #f59e0b;
-    --slate-text: #0f172a;
-    --slate-body: #334155;
-    --bg-light: #f8fafc;
 }
 
 html {
+    color-scheme: light !important;
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: #f1f5f9 !important;
 }
 
-/* Nền trang sáng sủa, sạch sẽ, không bị màu xám xi măng buồn tẻ */
+/* Nền trang sáng sạch, tạo độ tương phản mạnh với các thẻ Card trắng */
 body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-    color: #1e293b !important;
+    color: #0f172a !important;
     background-color: #f8fafc !important;
     min-height: 100vh;
     margin: 0;
     padding: 0;
 }
 
-/* 2. Định nghĩa trực tiếp hệ màu FreshMart (Đảm bảo 100% không phụ thuộc JIT) */
-.bg-fresh-50  { background-color: var(--fresh-50)  !important; }
-.bg-fresh-100 { background-color: var(--fresh-100) !important; }
-.bg-fresh-200 { background-color: var(--fresh-200) !important; }
-.bg-fresh-500 { background-color: var(--fresh-500) !important; }
-.bg-fresh-600 { background-color: var(--fresh-600) !important; }
-.bg-fresh-700 { background-color: var(--fresh-700) !important; }
-.bg-fresh-800 { background-color: var(--fresh-800) !important; }
-.bg-fresh-900 { background-color: var(--fresh-900) !important; }
+/* 2. Main Header: Trắng tinh khiết 100% không bị ngả màu xanh */
+header {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+}
 
-.text-fresh-100 { color: var(--fresh-100) !important; }
-.text-fresh-200 { color: var(--fresh-200) !important; }
-.text-fresh-400 { color: var(--fresh-400) !important; }
-.text-fresh-500 { color: var(--fresh-500) !important; }
-.text-fresh-600 { color: var(--fresh-600) !important; }
-.text-fresh-700 { color: var(--fresh-700) !important; }
-.text-fresh-800 { color: var(--fresh-800) !important; }
-.text-fresh-900 { color: var(--fresh-900) !important; }
+/* 3. Navigation Bar Danh mục: Xanh lá đậm chuẩn siêu thị cao cấp */
+nav.bg-fresh-700 {
+    background-color: #15803d !important;
+    color: #ffffff !important;
+}
 
-.border-fresh-100 { border-color: var(--fresh-100) !important; }
-.border-fresh-200 { border-color: var(--fresh-200) !important; }
-.border-fresh-600 { border-color: var(--fresh-600) !important; }
-.border-fresh-700 { border-color: var(--fresh-700) !important; }
-.border-fresh-800 { border-color: var(--fresh-800) !important; }
+/* 4. Định nghĩa trực tiếp hệ màu FreshMart (100% không phụ thuộc Tailwind JIT) */
+.bg-fresh-50  { background-color: #f0fdf4 !important; }
+.bg-fresh-100 { background-color: #dcfce7 !important; }
+.bg-fresh-200 { background-color: #bbf7d0 !important; }
+.bg-fresh-500 { background-color: #22c55e !important; }
+.bg-fresh-600 { background-color: #16a34a !important; }
+.bg-fresh-700 { background-color: #15803d !important; }
+.bg-fresh-800 { background-color: #166534 !important; }
+.bg-fresh-900 { background-color: #14532d !important; }
 
-.hover\:bg-fresh-50:hover  { background-color: var(--fresh-50)  !important; }
-.hover\:bg-fresh-100:hover { background-color: var(--fresh-100) !important; }
-.hover\:bg-fresh-600:hover { background-color: var(--fresh-600) !important; }
-.hover\:bg-fresh-700:hover { background-color: var(--fresh-700) !important; }
-.hover\:text-fresh-600:hover { color: var(--fresh-600) !important; }
-.hover\:text-fresh-700:hover { color: var(--fresh-700) !important; }
+.text-fresh-100 { color: #dcfce7 !important; }
+.text-fresh-200 { color: #bbf7d0 !important; }
+.text-fresh-300 { color: #86efac !important; }
+.text-fresh-400 { color: #4ade80 !important; }
+.text-fresh-500 { color: #22c55e !important; }
+.text-fresh-600 { color: #16a34a !important; }
+.text-fresh-700 { color: #15803d !important; }
+.text-fresh-800 { color: #166534 !important; }
+.text-fresh-900 { color: #14532d !important; }
 
-/* 3. Hero Banner: Gradient xanh ngọc bích đậm sang trọng, tương phản cao */
+.border-fresh-100 { border-color: #dcfce7 !important; }
+.border-fresh-200 { border-color: #bbf7d0 !important; }
+.border-fresh-600 { border-color: #16a34a !important; }
+.border-fresh-700 { border-color: #15803d !important; }
+.border-fresh-800 { border-color: #166534 !important; }
+
+.hover\:bg-fresh-50:hover  { background-color: #f0fdf4 !important; }
+.hover\:bg-fresh-100:hover { background-color: #dcfce7 !important; }
+.hover\:bg-fresh-600:hover { background-color: #16a34a !important; }
+.hover\:bg-fresh-700:hover { background-color: #15803d !important; }
+.hover\:bg-fresh-800:hover { background-color: #166534 !important; }
+.hover\:text-fresh-600:hover { color: #16a34a !important; }
+.hover\:text-fresh-700:hover { color: #15803d !important; }
+
+/* 5. Khối Card Sản Phẩm, Sidebar, Toolbar, Form: Luôn có nền TRẮNG TINH & viền rõ ràng */
+.bg-white,
+aside form,
+.card-hover {
+    background-color: #ffffff !important;
+}
+
+/* 6. Hero Banner: Gradient xanh ngọc bích đậm sang trọng, tương phản cao */
 .hero-banner {
     background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #10b981 100%) !important;
     position: relative;
     color: #ffffff !important;
 }
 
-/* 4. Thẻ Card & Hiệu ứng hover nổi bật */
+/* 7. Hiệu ứng nổi bật cho Card sản phẩm */
 .card-hover {
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    background-color: #ffffff;
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
 }
 
 .card-hover:hover {
     transform: translateY(-4px) !important;
-    box-shadow: 0 16px 32px -12px rgba(22, 163, 74, 0.2) !important;
+    box-shadow: 0 20px 25px -5px rgba(22, 163, 74, 0.15), 0 8px 10px -6px rgba(22, 163, 74, 0.1) !important;
+    border-color: #86efac !important;
 }
 
-/* 5. Badge giảm giá góc sản phẩm */
+/* 8. Badge giảm giá góc sản phẩm */
 .discount-badge {
     position: absolute;
     top: 10px;
@@ -105,12 +130,7 @@ body {
     z-index: 10;
 }
 
-/* 6. Header cố định không bị mờ đục */
-header {
-    background-color: #ffffff !important;
-}
-
-/* 7. Thanh cuộn đẹp mắt */
+/* 9. Thanh cuộn đẹp mắt */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -126,9 +146,9 @@ header {
     background: #94a3b8;
 }
 
-/* 8. Fix input focus */
+/* 10. Form Controls: Viền sắc nét, focus xanh lá tươi */
 input:focus, textarea:focus, select:focus {
     border-color: #16a34a !important;
     outline: none !important;
-    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2) !important;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25) !important;
 }

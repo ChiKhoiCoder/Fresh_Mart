@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#15803d">
     <title>{% block title %}{{ store_name }}{% endblock %}</title>
     <!-- Google Fonts preconnect (tốc độ tối ưu) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -169,18 +171,18 @@
         </div>
 
         <!-- 3. NAVIGATION BAR (CATEGORIES) -->
-        <nav class="bg-fresh-50 border-t border-fresh-100 overflow-x-auto scrollbar-none">
+        <nav class="bg-fresh-700 text-white shadow-md overflow-x-auto scrollbar-none">
             <div class="max-w-7xl mx-auto px-4 flex items-center space-x-1 py-1.5 whitespace-nowrap text-sm">
                 <a href="{{ url_for('products') }}"
-                    class="font-bold text-fresh-800 hover:bg-fresh-200/50 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-                    <i class="fa-solid fa-border-all text-fresh-600"></i>
+                    class="font-bold text-white hover:bg-fresh-800 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors">
+                    <i class="fa-solid fa-border-all text-amber-300"></i>
                     <span>Tất Cả Sản Phẩm</span>
                 </a>
-                <span class="text-slate-300">|</span>
+                <span class="text-fresh-600">|</span>
                 {% for cat in all_categories %}
                 <a href="{{ url_for('products', category=cat.id) }}"
-                    class="text-slate-700 hover:text-fresh-700 hover:bg-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium text-xs sm:text-sm">
-                    <i class="{{ cat.icon }} text-fresh-600"></i>
+                    class="text-emerald-50 hover:text-white hover:bg-fresh-800 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium text-xs sm:text-sm">
+                    <i class="{{ cat.icon }} text-fresh-300"></i>
                     <span>{{ cat.name }}</span>
                 </a>
                 {% endfor %}
